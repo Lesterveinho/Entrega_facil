@@ -1,0 +1,15 @@
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # Delivery API roda no HOST (fora do Docker).
+  # host.docker.internal = IP do host visto de dentro do container (Docker Desktop Windows/Mac).
+  - job_name: 'delivery-api'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['host.docker.internal:8080']

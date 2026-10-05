@@ -1,0 +1,48 @@
+name: delivery-infra
+
+# Infra de observabilidade do projeto Delivery API.
+# A aplicacao Spring Boot roda no HOST (mvn spring-boot:run) na porta 8080.
+# Estes servicos rodam em containers e conversam com o app via host.docker.internal.
+# Suba tudo com:  docker compose up -d   (dentro da pasta infra/)
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: delivery-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: delivery-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: delivery-zipkin
+    ports:
+      - "9411:9411"
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: delivery-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+volumes:
+  grafana-data:
